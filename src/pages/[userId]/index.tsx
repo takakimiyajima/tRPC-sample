@@ -40,6 +40,8 @@ export default function UserIdIndex() {
     { enabled: router.isReady },
   )
 
+  const utils = api.useContext()
+
   const tweetCreateMutation = api.tweet.create.useMutation()
 
   if (isLoadingUser)
@@ -56,7 +58,18 @@ export default function UserIdIndex() {
   const onSubmit = ({ content }: TweetContentSchema) => {
     if (tweetCreateMutation.isLoading) return
     
-    tweetCreateMutation.mutate({ content })
+    tweetCreateMutation.mutate(
+      { content },
+      {
+        onSuccess: (data) => {
+          utils.tweet.getAllByUserId.setData(
+            { userId: data.userId },
+            [ data, ...tweets ]
+          )
+        },
+      // onError: () => {}
+      }
+    )
     reset()
   }
 
