@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { DefaultLayout } from '@/components/DefaultLayout'
 import { UserIcon } from '@/components/UserIcon'
+import { TweetList } from '@/components/TweetList'
 import { api } from '@/utils/api'
 import { tweetContentSchema, type TweetContentSchema } from '@/validations/tweet'
 
@@ -29,6 +30,14 @@ export default function UserIdIndex() {
   } = api.user.getByUserId.useQuery(
     { userId },
     { enabled: router.isReady }
+  )
+
+  const {
+    data: tweets = [],
+    isLoading: isLoadingTweets
+  } = api.tweet.getAllByUserId.useQuery(
+    { userId },
+    { enabled: router.isReady },
   )
 
   const tweetCreateMutation = api.tweet.create.useMutation()
@@ -71,7 +80,7 @@ export default function UserIdIndex() {
               {...register("content")}
               rows={4}
               className="block w-full rounded-lg border border-gray-30 p-2.5 text-sm text-slate-900"
-              placeholder="いまどうしてる？"
+              placeholder="What's happening??"
               minLength={1}
               maxLength={140}
             >
@@ -80,10 +89,14 @@ export default function UserIdIndex() {
               className="rounded-full bg-sky-500 px-5 py-3 text-white disabled:opacity-50"
               disabled={!isValid || tweetCreateMutation.isLoading}
             >
-              ツイートする
+              Post
             </button>
           </form>
         )}
+      </div>
+      <div>
+        <h2 className="mb-2 font-bold">Posts</h2>
+        <TweetList tweets={tweets} isLoading={isLoadingTweets} />
       </div>
     </DefaultLayout>
   )

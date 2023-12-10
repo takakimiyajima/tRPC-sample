@@ -1,5 +1,5 @@
-import { createTRPCRouter , protectedProcedure } from "@/server/api/trpc"
-import { tweetContentSchema } from "@/validations/tweet"
+import { createTRPCRouter, protectedProcedure, publicProcedure } from "@/server/api/trpc"
+import { tweetContentSchema, tweetUserIdSchema } from "@/validations/tweet"
 
 export const tweetRouter = createTRPCRouter({
   create: protectedProcedure
@@ -22,6 +22,28 @@ export const tweetRouter = createTRPCRouter({
             }
           },
           likes: true
+        }
+      })
+    }),
+  getAllByUserId: publicProcedure
+    .input(tweetUserIdSchema)
+    .query(({ ctx, input }) => {
+      return ctx.db.tweet.findMany({
+        where: {
+          userId: input.userId
+        },
+        orderBy: {
+          createdAt: 'desc'
+        },
+        include: {
+          from: {
+            select: {
+              id: true,
+              name: true,
+              image: true,
+            }
+          },
+          likes: true,
         }
       })
     })

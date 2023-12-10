@@ -13,7 +13,7 @@ export const DefaultLayout = ({ children, session }: Props) => {
   const navItems = [
     {
       href: "/all",
-      label: "全体",
+      label: "TOP",
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" fill="none"
           viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-8 w-8"
@@ -39,7 +39,7 @@ export const DefaultLayout = ({ children, session }: Props) => {
       ...[
         {
           href: "/home",
-          label: "ホーム",
+          label: "Home",
           icon: (
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-8 w-8">
               <path
@@ -59,7 +59,7 @@ export const DefaultLayout = ({ children, session }: Props) => {
         },
         {
           href: `/${session?.user.id ?? ""}`,
-          label: "プロフィール",
+          label: "Profile",
           icon: (
           <svg xmlns="http://www.w3.org/2000/svg" fill="none"
           viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-8 w-8"
@@ -87,7 +87,7 @@ export const DefaultLayout = ({ children, session }: Props) => {
   return (
     <div className="container mx-auto flex gap-5 p-4">
       <aside className="flex w-72 flex-col gap-2">
-        {navItems.map(({ href, label, icon, selectedIcon }) => {
+        {navItems.map(({ href, label, selectedIcon }) => {
           return (
             <Link
               key={href}
@@ -110,7 +110,7 @@ export const DefaultLayout = ({ children, session }: Props) => {
                 d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"
               />
             </svg>
-          <div className="text-xl">ログアウト</div> </button>
+          <div className="text-xl">LogOut</div> </button>
         ) : (
           <button
             onClick={() => void signIn()}
@@ -123,7 +123,7 @@ export const DefaultLayout = ({ children, session }: Props) => {
                 d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.250 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25- 2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"
               />
             </svg>
-            <div className="text-xl">ログイン</div>
+            <div className="text-xl">LogIn</div>
           </button>
         )}
       </aside>
