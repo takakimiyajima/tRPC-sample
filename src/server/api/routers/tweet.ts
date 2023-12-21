@@ -1,5 +1,9 @@
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "@/server/api/trpc"
-import { tweetContentSchema, tweetUserIdSchema } from "@/validations/tweet"
+import {
+  cursorBasedPaginationSchema,
+  tweetContentSchema,
+  tweetUserIdSchema,
+} from "@/validations/tweet"
 
 export const tweetRouter = createTRPCRouter({
   create: protectedProcedure
@@ -27,8 +31,8 @@ export const tweetRouter = createTRPCRouter({
     }),
   getAllByUserId: publicProcedure
     .input(tweetUserIdSchema)
-    .query(({ ctx, input }) => {
-      return ctx.db.tweet.findMany({
+    .query(async ({ ctx, input }) => {
+      return await ctx.db.tweet.findMany({
         where: {
           userId: input.userId
         },
@@ -46,5 +50,39 @@ export const tweetRouter = createTRPCRouter({
           likes: true,
         }
       })
+    }),
+  getAll: publicProcedure
+    .input(cursorBasedPaginationSchema)
+    .query(async ({ ctx, input }) => {
+      const take = 10
+      const { cursor } = input
+      const tweets = await ctx.db.tweet.findMany({ 
+        take: take + 1,
+        orderBy: {
+          createdAt: 'desc'
+        },
+        cursor: cursor ? { id: cursor } : undefined,
+        include: {
+          from: {
+            select: {
+              id: true,
+              name: true,
+              image: true
+            }
+          },
+          likes: true
+        }
+      })
+      // Cursor-based pagination
+      let nextCursor: typeof cursor = undefined
+      if (tweets.length > take) {
+        const nextTweet = tweets.pop()
+        nextCursor = nextTweet?.id
+      }
+      
+      return {
+        tweets,
+        nextCursor
+      }
     })
 })

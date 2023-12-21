@@ -47,7 +47,7 @@ export default function UserIdIndex() {
   if (isLoadingUser)
     return (
       <DefaultLayout session={session}>
-        <div>Loading. .</div>
+        <div>Loading...</div>
       </DefaultLayout>
     )
   
