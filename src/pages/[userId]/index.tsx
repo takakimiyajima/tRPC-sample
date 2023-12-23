@@ -3,6 +3,7 @@ import { useSession } from 'next-auth/react'
 import Error from 'next/error'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import produce from 'immer'
 import { DefaultLayout } from '@/components/DefaultLayout'
 import { UserIcon } from '@/components/UserIcon'
 import { TweetList } from '@/components/TweetList'
@@ -40,9 +41,9 @@ export default function UserIdIndex() {
     { enabled: router.isReady },
   )
 
-  const utils = api.useContext()
-
+  const utils = api.useUtils()
   const tweetCreateMutation = api.tweet.create.useMutation()
+  const tweetLinkLikeOrUnlikeMutation = api.tweetLink.likeOrUnlike.useMutation()
 
   if (isLoadingUser)
     return (
@@ -73,10 +74,36 @@ export default function UserIdIndex() {
     reset()
   }
 
+  const handleClickLike = (tweetId: string) => {
+    if (!session) {
+      alert('ログイン')
+      return
+    }
+    if (tweetLinkLikeOrUnlikeMutation.isLoading) return
+
+    tweetLinkLikeOrUnlikeMutation.mutate(
+      { tweetId },
+      {
+        onSuccess: (data) => {
+          utils.tweet.getAllByUserId.setData({ userId }, (old) =>
+            produce(old, (draft) => {
+              const tweet = draft?.find((t) => t.id === tweetId)
+              if (!tweet) return draft
+              const likeIndex = tweet.likes.findIndex((like) => like.userId === data.userId)
+              likeIndex === -1
+                ? tweet.likes.push(data)
+                : tweet.likes.splice(likeIndex, 1)
+            }),
+          )
+        }
+      }
+    )
+  }
+
   return (
     <DefaultLayout session={session}>
       <div className="flex flex-col gap-2">
-        <div className="flex items-end justify-betwe n">
+        <div className="flex items-end justify-between">
           <div className="h-24 w-24">
             <UserIcon {...user} />
           </div>
@@ -109,7 +136,12 @@ export default function UserIdIndex() {
       </div>
       <div>
         <h2 className="mb-2 font-bold">Posts</h2>
-        <TweetList tweets={tweets} isLoading={isLoadingTweets} />
+        <TweetList
+          tweets={tweets}
+          isLoading={isLoadingTweets}
+          handleClickLike={handleClickLike}
+          currentUserId={session?.user.id}
+        />
       </div>
     </DefaultLayout>
   )
