@@ -29,28 +29,6 @@ export const tweetRouter = createTRPCRouter({
         }
       })
     }),
-  getAllByUserId: publicProcedure
-    .input(tweetUserIdSchema)
-    .query(async ({ ctx, input }) => {
-      return await ctx.db.tweet.findMany({
-        where: {
-          userId: input.userId
-        },
-        orderBy: {
-          createdAt: 'desc'
-        },
-        include: {
-          from: {
-            select: {
-              id: true,
-              name: true,
-              image: true,
-            }
-          },
-          likes: true,
-        }
-      })
-    }),
   getAll: publicProcedure
     .input(cursorBasedPaginationSchema)
     .query(async ({ ctx, input }) => {
@@ -84,5 +62,51 @@ export const tweetRouter = createTRPCRouter({
         tweets,
         nextCursor
       }
-    })
+    }),
+  getAllByUserId: publicProcedure
+    .input(tweetUserIdSchema)
+    .query(async ({ ctx, input }) => {
+      return await ctx.db.tweet.findMany({
+        where: {
+          userId: input.userId
+        },
+        orderBy: {
+          createdAt: 'desc'
+        },
+        include: {
+          from: {
+            select: {
+              id: true,
+              name: true,
+              image: true,
+            }
+          },
+          likes: true,
+        }
+      })
+    }),
+    getByFollowing: protectedProcedure.query(async ({ ctx }) => {
+      const user = await ctx.db.user.findUnique({
+        where: { id: ctx.session.user.id },
+        include: { following: true },
+      })
+      return ctx.db.tweet.findMany({
+        where: {
+          userId: { in: user?.following.map((follow) => follow.targetId) },
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+        include: {
+          from: {
+            select: {
+              id: true,
+              name: true,
+              image: true,
+            },
+          },
+          likes: true,
+        },
+      })
+    }),
 })
